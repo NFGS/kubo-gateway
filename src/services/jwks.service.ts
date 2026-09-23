@@ -13,7 +13,11 @@ import { config } from '../config';
 export class JwksService {
   private readonly logger = new Logger(JwksService.name);
   private readonly jwks = createRemoteJWKSet(new URL(config.jwksUri), {
-    cooldownDuration: 30_000,
+    // Si llega un `kid` desconocido (rotacion de llave), jose vuelve a pedir el
+    // JWKS. El tiempo de espera entre reintentos existe para que nadie pueda
+    // saturar el endpoint de identidad con tokens de `kid` inventado; 10 s es el
+    // equilibrio: una rotacion se reconoce casi de inmediato sin amplificar trafico.
+    cooldownDuration: 10_000,
     cacheMaxAge: 600_000,
     timeoutDuration: 5_000,
   });
