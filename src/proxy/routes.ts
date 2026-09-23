@@ -32,3 +32,19 @@ export function findRoute(path: string): ProxyRoute | undefined {
     (route) => path === route.prefix || path.startsWith(`${route.prefix}/`),
   );
 }
+
+/**
+ * Rutas que el gateway atiende por si mismo y no debe reenviar:
+ *
+ * - `/api/v1/health`: sonda propia (no depende de los servicios).
+ * - `/api/v1/dashboard/overview`: vista compuesta que consulta a varios
+ *   servicios en paralelo (patron BFF).
+ */
+export const GATEWAY_OWNED_PATHS: ReadonlySet<string> = new Set([
+  '/api/v1/health',
+  '/api/v1/dashboard/overview',
+]);
+
+export function isGatewayOwned(path: string): boolean {
+  return GATEWAY_OWNED_PATHS.has(path);
+}

@@ -1,7 +1,7 @@
 import type { Express, NextFunction, Request, Response } from 'express';
 import { createProxyMiddleware, type RequestHandler } from 'http-proxy-middleware';
 import { logger } from '../logger';
-import { findRoute, proxyRoutes, type ProxyRoute } from './routes';
+import { findRoute, isGatewayOwned, proxyRoutes, type ProxyRoute } from './routes';
 
 interface RouteHandler {
   readonly route: ProxyRoute;
@@ -62,6 +62,10 @@ export function registerProxies(app: Express): void {
   }));
 
   app.use((request: Request, response: Response, next: NextFunction) => {
+    if (isGatewayOwned(request.path)) {
+      next();
+      return;
+    }
     const route = findRoute(request.path);
     if (!route) {
       next();
