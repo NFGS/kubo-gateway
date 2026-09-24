@@ -1,3 +1,4 @@
+import './tracing';
 import 'reflect-metadata';
 import type { Express } from 'express';
 import helmet from 'helmet';

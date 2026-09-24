@@ -64,3 +64,14 @@ npm start
   petición llega por HTTPS (`KUBO_COOKIE_SECURE=true` o `X-Forwarded-Proto`).
 - **Límite por usuario**: una cuenta comprometida no consume la cuota de todo el
   negocio (`KUBO_USER_RATE_LIMIT_PER_MINUTE`, 300 por defecto).
+
+## Observabilidad y contratos (Fase 2)
+
+- **Trazas OpenTelemetry**: `src/tracing.ts` activa el SDK solo si
+  `OTEL_EXPORTER_OTLP_ENDPOINT` está definido; la instrumentación automática
+  cubre HTTP, Express y los proxys hacia los microservicios.
+- **Contratos ejecutables**: `scripts/contracts.mjs` valida las respuestas reales
+  contra `kubo-docs/api/openapi.json` con Ajv (`make contracts`). El esquema
+  `LoginResponse` usa `additionalProperties: false`: un `refreshToken` filtrado
+  rompe la validación.
+- **CI**: `.gitlab-ci.yml` con typecheck, pruebas, SAST, secretos y dependencias.

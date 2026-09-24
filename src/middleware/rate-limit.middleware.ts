@@ -3,10 +3,20 @@ import { config } from '../config';
 import { logger } from '../logger';
 import type { RedisService } from '../services/redis.service';
 
+/**
+ * IP del cliente para el limite de tasa.
+ *
+ * Se toma la ULTIMA entrada de `X-Forwarded-For`, no la primera: la ultima la
+ * agrega el proxy propio (nginx), que sobrescribe la cabecera con la IP real.
+ * Usar la primera permitia a un cliente inyectar una IP falsa y saltarse el
+ * limite de autenticacion. En produccion, ademas, el gateway no debe publicarse
+ * al host (ver `kubo-docs/05-despliegue.md`).
+ */
 function clientIp(request: Request): string {
   const forwarded = request.headers['x-forwarded-for'];
   if (typeof forwarded === 'string' && forwarded.length > 0) {
-    return forwarded.split(',')[0]!.trim();
+    const partes = forwarded.split(',');
+    return partes[partes.length - 1]!.trim();
   }
   return request.ip ?? 'desconocida';
 }
