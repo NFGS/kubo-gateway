@@ -135,6 +135,21 @@ else {
   fail += 1;
 }
 
+const users = await get('/users?size=5', token);
+if (users.status === 200) check('/users cumple el esquema UsersPage', 'UsersPage', users.body);
+else {
+  console.log(`  \u001b[31mFALLA\u001b[0m /users respondio ${users.status}`);
+  fail += 1;
+}
+
+const cash = await get('/cash-sessions/current', token);
+if (cash.status === 200) {
+  check('/cash-sessions/current cumple el esquema (caja abierta o null)', 'CashSessionCurrent', cash.body);
+} else {
+  console.log(`  \u001b[31mFALLA\u001b[0m /cash-sessions/current respondio ${cash.status}`);
+  fail += 1;
+}
+
 const overview = await get('/dashboard/overview', token);
 if (overview.status === 200) {
   check('/dashboard/overview cumple el esquema OverviewResponse', 'OverviewResponse', overview.body);
