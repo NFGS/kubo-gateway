@@ -16,11 +16,14 @@ petición al microservicio correspondiente.
    nunca sale del servicio de identidad.
 2. **Anti-suplantación**: elimina cualquier cabecera `X-User-*` enviada por el
    cliente antes de inyectar la identidad verificada.
-3. **Límites de tasa** por negocio o IP, con ventana de un minuto y umbral más
-   estricto en las rutas de autenticación.
-4. **Correlation ID** por petición, propagado a los servicios y a los logs.
-5. **Enrutamiento** sin reescritura de rutas: cada servicio sirve `/api/v1/...`.
-6. **Observabilidad**: logs JSON estructurados, con `Authorization` redactado.
+3. **Límites de tasa** por **usuario**, negocio o IP, con ventana de un minuto y
+   umbral más estricto en las rutas de autenticación.
+4. **BFF de autenticación**: intercepta `login`, `refresh` y `logout`, deja el
+   refresh token en una **cookie `httpOnly` + `SameSite=Strict`** y lo elimina del
+   cuerpo de la respuesta.
+5. **Correlation ID** por petición, propagado a los servicios y a los logs.
+6. **Enrutamiento** sin reescritura de rutas: cada servicio sirve `/api/v1/...`.
+7. **Observabilidad**: logs JSON estructurados, con `Authorization` redactado.
 
 ## Tabla de enrutamiento
 
@@ -34,7 +37,8 @@ petición al microservicio correspondiente.
 ## Rutas públicas
 
 `/api/v1/health`, `/api/v1/auth/login`, `/api/v1/auth/register`,
-`/api/v1/auth/refresh`, `/api/v1/auth/logout` y
+`/api/v1/auth/refresh`, `/api/v1/auth/logout`,
+`/api/v1/auth/forgot-password`, `/api/v1/auth/reset-password` y
 `/api/v1/auth/.well-known/jwks.json`. Todo lo demás exige `Bearer <token>`.
 
 ## Ejecución local
@@ -55,3 +59,8 @@ npm start
   original.
 - **Fail-open en Redis**: si el almacén de límites cae, se permite el tráfico y se
   registra la advertencia; el negocio no se detiene por un componente auxiliar.
+- **BFF para el refresh token**: el navegador nunca ve el token de refresco; viaja
+  solo en la cookie `httpOnly` con `Path=/api/v1/auth` y `Secure` cuando la
+  petición llega por HTTPS (`KUBO_COOKIE_SECURE=true` o `X-Forwarded-Proto`).
+- **Límite por usuario**: una cuenta comprometida no consume la cuota de todo el
+  negocio (`KUBO_USER_RATE_LIMIT_PER_MINUTE`, 300 por defecto).

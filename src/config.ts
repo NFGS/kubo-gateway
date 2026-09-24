@@ -17,6 +17,9 @@ export interface GatewayConfig {
   readonly audience: string;
   readonly rateLimitPerMinute: number;
   readonly authRateLimitPerMinute: number;
+  readonly userRateLimitPerMinute: number;
+  readonly cookieSecure: boolean;
+  readonly refreshCookieDays: number;
   readonly services: ServiceTargets;
   readonly logLevel: string;
 }
@@ -36,6 +39,9 @@ export const config: GatewayConfig = {
   audience: process.env.KUBO_JWT_AUDIENCE ?? 'kubo-api',
   rateLimitPerMinute: num(process.env.KUBO_RATE_LIMIT_PER_MINUTE, 600),
   authRateLimitPerMinute: num(process.env.KUBO_AUTH_RATE_LIMIT_PER_MINUTE, 40),
+  userRateLimitPerMinute: num(process.env.KUBO_USER_RATE_LIMIT_PER_MINUTE, 300),
+  cookieSecure: process.env.KUBO_COOKIE_SECURE === 'true',
+  refreshCookieDays: num(process.env.KUBO_REFRESH_COOKIE_DAYS, 7),
   logLevel: process.env.LOG_LEVEL ?? 'info',
   services: {
     iam: process.env.KUBO_IAM_URL ?? 'http://localhost:9081',

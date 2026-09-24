@@ -14,9 +14,10 @@ function clientIp(request: Request): string {
 /**
  * Limite de tasa por ventana de un minuto.
  *
- * La identidad usada es el negocio (tenant) cuando hay token, y la direccion
- * IP cuando no lo hay. Las rutas de autenticacion tienen un limite mas
- * estricto para frenar ataques de fuerza bruta.
+ * Prioridad de identidad: **usuario** (cuando el token ya fue verificado),
+ * negocio (tenant) e IP. El limite por usuario evita que una sola cuenta
+ * comprometida consuma la cuota de todo el negocio. Las rutas de autenticacion
+ * conservan un limite estricto por IP para frenar la fuerza bruta.
  */
 export function createRateLimitMiddleware(redis: RedisService) {
   return async function rateLimitMiddleware(
@@ -25,12 +26,25 @@ export function createRateLimitMiddleware(redis: RedisService) {
     next: NextFunction,
   ): Promise<void> {
     const isAuthPath = request.path.startsWith('/api/v1/auth');
-    const identity = request.headers['x-tenant-id'];
-    const key =
-      typeof identity === 'string' && identity.length > 0
-        ? `kubo:rl:tenant:${identity}`
-        : `kubo:rl:ip:${clientIp(request)}`;
-    const limit = isAuthPath ? config.authRateLimitPerMinute : config.rateLimitPerMinute;
+    const userId = request.headers['x-user-id'];
+    const tenant = request.headers['x-tenant-id'];
+
+    let key: string;
+    let limit: number;
+
+    if (isAuthPath) {
+      key = `kubo:rl:ip:${clientIp(request)}`;
+      limit = config.authRateLimitPerMinute;
+    } else if (typeof userId === 'string' && userId.length > 0) {
+      key = `kubo:rl:user:${userId}`;
+      limit = config.userRateLimitPerMinute;
+    } else if (typeof tenant === 'string' && tenant.length > 0) {
+      key = `kubo:rl:tenant:${tenant}`;
+      limit = config.rateLimitPerMinute;
+    } else {
+      key = `kubo:rl:ip:${clientIp(request)}`;
+      limit = config.rateLimitPerMinute;
+    }
 
     const count = await redis.incrementWindow(key);
     if (count !== null) {

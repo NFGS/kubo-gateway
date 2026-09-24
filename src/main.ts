@@ -6,6 +6,7 @@ import { pinoHttp } from 'pino-http';
 import { AppModule } from './app.module';
 import { config } from './config';
 import { logger } from './logger';
+import { createAuthBffRouter } from './auth/auth-bff';
 import { correlationMiddleware } from './middleware/correlation.middleware';
 import { createAuthMiddleware } from './middleware/auth.middleware';
 import { createRateLimitMiddleware } from './middleware/rate-limit.middleware';
@@ -34,6 +35,11 @@ async function bootstrap(): Promise<void> {
   );
   server.use(createAuthMiddleware(app.get(JwksService)));
   server.use(createRateLimitMiddleware(app.get(RedisService)));
+
+  // BFF de autenticacion: login/refresh/logout pasan por aqui para que el
+  // refresh token quede en una cookie httpOnly y nunca en el cuerpo.
+  server.use('/api/v1/auth', createAuthBffRouter());
+
   registerProxies(server);
 
   await app.listen(config.port, '0.0.0.0');
