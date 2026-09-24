@@ -10,6 +10,8 @@ export const PUBLIC_PATHS: ReadonlySet<string> = new Set([
   '/api/v1/auth/logout',
   '/api/v1/auth/forgot-password',
   '/api/v1/auth/reset-password',
+  // Segundo paso del acceso: se llama con el desafio, antes de tener sesion (P-30).
+  '/api/v1/auth/totp/verify',
   '/api/v1/auth/.well-known/jwks.json',
   '/api/v1/health',
 ]);

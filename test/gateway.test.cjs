@@ -27,6 +27,7 @@ test('findRoute resuelve prefijos exactos y anidados', () => {
 test('una ruta protegida no puede confundirse con una publica', () => {
   assert.ok(PUBLIC_PATHS.has('/api/v1/auth/login'));
   assert.ok(PUBLIC_PATHS.has('/api/v1/auth/.well-known/jwks.json'));
+  assert.ok(PUBLIC_PATHS.has('/api/v1/auth/totp/verify'));
   assert.ok(!PUBLIC_PATHS.has('/api/v1/auth/me'));
   assert.ok(!PUBLIC_PATHS.has('/api/v1/customers'));
 });

@@ -27,6 +27,14 @@ export class JwksService {
       issuer: config.issuer,
       audience: config.audience,
     });
+
+    // Solo los tokens de acceso abren la API. El desafio del segundo factor
+    // (P-30) se firma con la misma llave pero con `typ=totp`: sin esta
+    // comprobacion, un desafio serviria como credencial de API.
+    if (payload.typ !== 'access') {
+      throw new Error('El token no es un token de acceso');
+    }
+
     return payload;
   }
 
