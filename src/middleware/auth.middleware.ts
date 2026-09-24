@@ -14,7 +14,15 @@ export const PUBLIC_PATHS: ReadonlySet<string> = new Set([
   '/api/v1/health',
 ]);
 
-const IDENTITY_HEADERS = ['x-user-id', 'x-tenant-id', 'x-user-role', 'x-user-email'];
+const IDENTITY_HEADERS = [
+  'x-user-id',
+  'x-tenant-id',
+  'x-user-role',
+  'x-user-email',
+  // Zona horaria del negocio (ADR-0012): viaja en el token y el ERP la usa para
+  // calcular su dia comercial.
+  'x-tenant-timezone',
+];
 
 /**
  * Valida el access token y propaga la identidad verificada a los servicios
@@ -53,6 +61,7 @@ export function createAuthMiddleware(jwks: JwksService) {
       request.headers['x-tenant-id'] = String(payload.tenant_id ?? '');
       request.headers['x-user-role'] = String(payload.role ?? '');
       request.headers['x-user-email'] = String(payload.email ?? '');
+      request.headers['x-tenant-timezone'] = String(payload.tenant_timezone ?? '');
       next();
     } catch (error) {
       logger.warn(

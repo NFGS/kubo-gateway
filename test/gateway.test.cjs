@@ -25,3 +25,68 @@ test('una ruta protegida no puede confundirse con una publica', () => {
   assert.ok(!PUBLIC_PATHS.has('/api/v1/auth/me'));
   assert.ok(!PUBLIC_PATHS.has('/api/v1/customers'));
 });
+
+test('la identidad verificada viaja como cabeceras, incluida la zona horaria', async () => {
+  const { createAuthMiddleware } = require('../dist/middleware/auth.middleware.js');
+  const jwks = {
+    verify: async () => ({
+      sub: 'usuario-1',
+      tenant_id: 'negocio-1',
+      role: 'OWNER',
+      email: 'admin@kubo.local',
+      tenant_timezone: 'America/Mexico_City',
+    }),
+  };
+  const middleware = createAuthMiddleware(jwks);
+
+  const request = {
+    path: '/api/v1/sales',
+    headers: {
+      authorization: 'Bearer token',
+      // El cliente intenta suplantar identidad: debe borrarse y reescribirse.
+      'x-user-id': 'intruso',
+      'x-tenant-timezone': 'Pacific/Kiritimati',
+    },
+  };
+  const response = fakeResponse();
+  let paso = false;
+
+  await middleware(request, response, () => {
+    paso = true;
+  });
+
+  assert.equal(paso, true);
+  assert.equal(request.headers['x-user-id'], 'usuario-1');
+  assert.equal(request.headers['x-tenant-id'], 'negocio-1');
+  assert.equal(request.headers['x-tenant-timezone'], 'America/Mexico_City');
+});
+
+test('sin zona horaria en el token la cabecera no queda con el valor del cliente', async () => {
+  const { createAuthMiddleware } = require('../dist/middleware/auth.middleware.js');
+  const jwks = { verify: async () => ({ sub: 'usuario-1', tenant_id: 'negocio-1' }) };
+  const middleware = createAuthMiddleware(jwks);
+
+  const request = {
+    path: '/api/v1/sales',
+    headers: { authorization: 'Bearer token', 'x-tenant-timezone': 'Pacific/Kiritimati' },
+  };
+
+  await middleware(request, fakeResponse(), () => undefined);
+
+  assert.equal(request.headers['x-tenant-timezone'], '');
+});
+
+function fakeResponse() {
+  return {
+    statusCode: 200,
+    body: undefined,
+    status(code) {
+      this.statusCode = code;
+      return this;
+    },
+    json(payload) {
+      this.body = payload;
+      return this;
+    },
+  };
+}
