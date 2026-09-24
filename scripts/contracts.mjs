@@ -121,6 +121,20 @@ else {
   fail += 1;
 }
 
+const suppliers = await get('/suppliers?limit=2', token);
+if (suppliers.status === 200) check('/suppliers cumple el esquema SupplierList', 'SupplierList', suppliers.body);
+else {
+  console.log(`  \u001b[31mFALLA\u001b[0m /suppliers respondio ${suppliers.status}`);
+  fail += 1;
+}
+
+const purchases = await get('/purchases?limit=2', token);
+if (purchases.status === 200) check('/purchases cumple el esquema PurchaseList', 'PurchaseList', purchases.body);
+else {
+  console.log(`  \u001b[31mFALLA\u001b[0m /purchases respondio ${purchases.status}`);
+  fail += 1;
+}
+
 const overview = await get('/dashboard/overview', token);
 if (overview.status === 200) {
   check('/dashboard/overview cumple el esquema OverviewResponse', 'OverviewResponse', overview.body);

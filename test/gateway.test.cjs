@@ -11,6 +11,9 @@ test('la tabla de rutas cubre los cuatro microservicios', () => {
 test('findRoute resuelve prefijos exactos y anidados', () => {
   assert.equal(findRoute('/api/v1/sales')?.service, 'kubo-erp');
   assert.equal(findRoute('/api/v1/sales/123/items')?.service, 'kubo-erp');
+  assert.equal(findRoute('/api/v1/purchases')?.service, 'kubo-erp');
+  assert.equal(findRoute('/api/v1/purchases/123/void')?.service, 'kubo-erp');
+  assert.equal(findRoute('/api/v1/suppliers/abc')?.service, 'kubo-erp');
   assert.equal(findRoute('/api/v1/customers/abc')?.service, 'kubo-crm');
   assert.equal(findRoute('/api/v1/dashboard/summary')?.service, 'kubo-analytics');
   assert.equal(findRoute('/api/v1/desconocido'), undefined);
