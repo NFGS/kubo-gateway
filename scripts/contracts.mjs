@@ -194,6 +194,20 @@ else {
   fail += 1;
 }
 
+const warehouses = await get('/warehouses', token);
+if (warehouses.status === 200) check('/warehouses cumple el esquema WarehouseList', 'WarehouseList', warehouses.body);
+else {
+  console.log(`  \u001b[31mFALLA\u001b[0m /warehouses respondio ${warehouses.status}`);
+  fail += 1;
+}
+
+const transfers = await get('/transfers', token);
+if (transfers.status === 200) check('/transfers cumple el esquema TransferList', 'TransferList', transfers.body);
+else {
+  console.log(`  \u001b[31mFALLA\u001b[0m /transfers respondio ${transfers.status}`);
+  fail += 1;
+}
+
 const overview = await get('/dashboard/overview', token);
 if (overview.status === 200) {
   check('/dashboard/overview cumple el esquema OverviewResponse', 'OverviewResponse', overview.body);
