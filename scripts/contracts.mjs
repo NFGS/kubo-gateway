@@ -194,6 +194,13 @@ else {
   fail += 1;
 }
 
+const notifications = await get('/notifications', token);
+if (notifications.status === 200) check('/notifications cumple el esquema NotificationList', 'NotificationList', notifications.body);
+else {
+  console.log(`  \u001b[31mFALLA\u001b[0m /notifications respondio ${notifications.status}`);
+  fail += 1;
+}
+
 const warehouses = await get('/warehouses', token);
 if (warehouses.status === 200) check('/warehouses cumple el esquema WarehouseList', 'WarehouseList', warehouses.body);
 else {
