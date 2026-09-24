@@ -47,6 +47,18 @@ function check(name, schemaName, payload) {
   }
 }
 
+async function post(pathname, token, body) {
+  const response = await fetch(`${BASE}${pathname}`, {
+    method: 'POST',
+    headers: {
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(body ? { 'Content-Type': 'application/json' } : {}),
+    },
+    ...(body ? { body: JSON.stringify(body) } : {}),
+  });
+  return { status: response.status, body: await response.json().catch(() => null) };
+}
+
 async function get(pathname, token) {
   const response = await fetch(`${BASE}${pathname}`, {
     headers: token ? { Authorization: `Bearer ${token}` } : {},
@@ -119,6 +131,17 @@ if (sales.status === 200) check('/sales cumple el esquema SaleList', 'SaleList',
 else {
   console.log(`  \u001b[31mFALLA\u001b[0m /sales respondio ${sales.status}`);
   fail += 1;
+}
+
+const saleId = sales.body?.data?.[0]?.id;
+if (saleId) {
+  const invoice = await post(`/sales/${saleId}/invoice`, token);
+  if (invoice.status === 200 || invoice.status === 201) {
+    check('/sales/{id}/invoice cumple el esquema InvoiceItem', 'InvoiceItem', invoice.body);
+  } else {
+    console.log(`  \u001b[31mFALLA\u001b[0m /sales/{id}/invoice respondio ${invoice.status}`);
+    fail += 1;
+  }
 }
 
 const suppliers = await get('/suppliers?limit=2', token);

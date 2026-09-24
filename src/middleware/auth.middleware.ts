@@ -24,6 +24,8 @@ const IDENTITY_HEADERS = [
   'x-tenant-timezone',
   // Paquete de configuracion activo (ADR-0013, P-17).
   'x-tenant-vertical',
+  // Nombre del negocio: lo necesita la factura electronica (P-18).
+  'x-tenant-name',
 ];
 
 /**
@@ -65,6 +67,7 @@ export function createAuthMiddleware(jwks: JwksService) {
       request.headers['x-user-email'] = String(payload.email ?? '');
       request.headers['x-tenant-timezone'] = String(payload.tenant_timezone ?? '');
       request.headers['x-tenant-vertical'] = String(payload.tenant_vertical ?? '');
+      request.headers['x-tenant-name'] = String(payload.tenant ?? '');
       next();
     } catch (error) {
       logger.warn(

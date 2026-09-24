@@ -41,6 +41,7 @@ test('la identidad verificada viaja como cabeceras, incluida la zona horaria', a
       email: 'admin@kubo.local',
       tenant_timezone: 'America/Mexico_City',
       tenant_vertical: 'restaurantes',
+      tenant: 'Tienda La Esquina',
     }),
   };
   const middleware = createAuthMiddleware(jwks);
@@ -66,6 +67,7 @@ test('la identidad verificada viaja como cabeceras, incluida la zona horaria', a
   assert.equal(request.headers['x-tenant-id'], 'negocio-1');
   assert.equal(request.headers['x-tenant-timezone'], 'America/Mexico_City');
   assert.equal(request.headers['x-tenant-vertical'], 'restaurantes');
+  assert.equal(request.headers['x-tenant-name'], 'Tienda La Esquina');
 });
 
 test('sin zona horaria en el token la cabecera no queda con el valor del cliente', async () => {
