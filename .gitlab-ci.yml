@@ -11,6 +11,11 @@ variables:
 gateway:test:
   stage: test
   image: node:22
+  services:
+    - name: redis:7-alpine
+      alias: redis
+  variables:
+    REDIS_URL: redis://redis:6379
   cache:
     key: gateway-npm
     paths: [.npm]
