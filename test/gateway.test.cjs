@@ -8,6 +8,11 @@ test('la tabla de rutas cubre los cuatro microservicios', () => {
   assert.deepEqual(services, ['kubo-analytics', 'kubo-crm', 'kubo-erp', 'kubo-iam']);
 });
 
+test('la tabla de rutas cubre packs y perfil del negocio', () => {
+  assert.equal(findRoute('/api/v1/packs')?.service, 'kubo-erp');
+  assert.equal(findRoute('/api/v1/tenants/me')?.service, 'kubo-iam');
+});
+
 test('findRoute resuelve prefijos exactos y anidados', () => {
   assert.equal(findRoute('/api/v1/sales')?.service, 'kubo-erp');
   assert.equal(findRoute('/api/v1/sales/123/items')?.service, 'kubo-erp');
@@ -35,6 +40,7 @@ test('la identidad verificada viaja como cabeceras, incluida la zona horaria', a
       role: 'OWNER',
       email: 'admin@kubo.local',
       tenant_timezone: 'America/Mexico_City',
+      tenant_vertical: 'restaurantes',
     }),
   };
   const middleware = createAuthMiddleware(jwks);
@@ -59,6 +65,7 @@ test('la identidad verificada viaja como cabeceras, incluida la zona horaria', a
   assert.equal(request.headers['x-user-id'], 'usuario-1');
   assert.equal(request.headers['x-tenant-id'], 'negocio-1');
   assert.equal(request.headers['x-tenant-timezone'], 'America/Mexico_City');
+  assert.equal(request.headers['x-tenant-vertical'], 'restaurantes');
 });
 
 test('sin zona horaria en el token la cabecera no queda con el valor del cliente', async () => {

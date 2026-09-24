@@ -22,6 +22,8 @@ const IDENTITY_HEADERS = [
   // Zona horaria del negocio (ADR-0012): viaja en el token y el ERP la usa para
   // calcular su dia comercial.
   'x-tenant-timezone',
+  // Paquete de configuracion activo (ADR-0013, P-17).
+  'x-tenant-vertical',
 ];
 
 /**
@@ -62,6 +64,7 @@ export function createAuthMiddleware(jwks: JwksService) {
       request.headers['x-user-role'] = String(payload.role ?? '');
       request.headers['x-user-email'] = String(payload.email ?? '');
       request.headers['x-tenant-timezone'] = String(payload.tenant_timezone ?? '');
+      request.headers['x-tenant-vertical'] = String(payload.tenant_vertical ?? '');
       next();
     } catch (error) {
       logger.warn(

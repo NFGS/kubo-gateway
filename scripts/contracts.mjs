@@ -150,6 +150,27 @@ if (cash.status === 200) {
   fail += 1;
 }
 
+const packs = await get('/packs', token);
+if (packs.status === 200) check('/packs cumple el esquema PackList', 'PackList', packs.body);
+else {
+  console.log(`  \u001b[31mFALLA\u001b[0m /packs respondio ${packs.status}`);
+  fail += 1;
+}
+
+const currentPack = await get('/packs/current', token);
+if (currentPack.status === 200) check('/packs/current cumple el esquema PackItem', 'PackItem', currentPack.body);
+else {
+  console.log(`  \u001b[31mFALLA\u001b[0m /packs/current respondio ${currentPack.status}`);
+  fail += 1;
+}
+
+const tenant = await get('/tenants/me', token);
+if (tenant.status === 200) check('/tenants/me cumple el esquema TenantItem', 'TenantItem', tenant.body);
+else {
+  console.log(`  \u001b[31mFALLA\u001b[0m /tenants/me respondio ${tenant.status}`);
+  fail += 1;
+}
+
 const overview = await get('/dashboard/overview', token);
 if (overview.status === 200) {
   check('/dashboard/overview cumple el esquema OverviewResponse', 'OverviewResponse', overview.body);
