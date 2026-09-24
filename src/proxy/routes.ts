@@ -26,6 +26,7 @@ export const proxyRoutes: readonly ProxyRoute[] = [
   { prefix: '/api/v1/suppliers', target: config.services.erp, service: 'kubo-erp' },
   { prefix: '/api/v1/purchases', target: config.services.erp, service: 'kubo-erp' },
   { prefix: '/api/v1/cash-sessions', target: config.services.erp, service: 'kubo-erp' },
+  { prefix: '/api/v1/reports', target: config.services.erp, service: 'kubo-erp' },
   { prefix: '/api/v1/dashboard', target: config.services.analytics, service: 'kubo-analytics' },
   { prefix: '/api/v1/events', target: config.services.analytics, service: 'kubo-analytics' },
 ];
