@@ -1,5 +1,8 @@
+import { readFileSync } from 'node:fs';
+import { Agent } from 'node:https';
 import type { Express, NextFunction, Request, Response } from 'express';
 import { createProxyMiddleware, type RequestHandler } from 'http-proxy-middleware';
+import { config } from '../config';
 import { logger } from '../logger';
 import { findRoute, isGatewayOwned, proxyRoutes, type ProxyRoute } from './routes';
 
@@ -8,10 +11,33 @@ interface RouteHandler {
   readonly handler: RequestHandler;
 }
 
+/**
+ * Agente de la malla interna (P-28, ADR-0020): el gateway presenta su
+ * certificado y verifica el del servicio contra la CA interna. Sin esto, un
+ * contenedor añadido a la red podria hablar con los servicios.
+ */
+function agenteInterno(): Agent | undefined {
+  if (!config.internalTls) {
+    return undefined;
+  }
+
+  return new Agent({
+    ca: readFileSync(config.internalCa),
+    cert: readFileSync(config.internalCert),
+    key: readFileSync(config.internalKey),
+    rejectUnauthorized: true,
+  });
+}
+
 function buildHandler(route: ProxyRoute): RequestHandler {
+  // El agente mTLS solo aplica a destinos HTTPS: pasarlo en un salto HTTP
+  // rompe la conexion (y mientras un servicio no este migrado, sigue en HTTP).
+  const agent = route.target.startsWith('https://') ? agenteInterno() : undefined;
+
   return createProxyMiddleware({
     target: route.target,
     changeOrigin: true,
+    ...(agent ? { agent } : {}),
     xfwd: true,
     timeout: 20_000,
     proxyTimeout: 20_000,

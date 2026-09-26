@@ -21,6 +21,10 @@ export interface GatewayConfig {
   readonly cookieSecure: boolean;
   readonly refreshCookieDays: number;
   readonly services: ServiceTargets;
+  readonly internalTls: boolean;
+  readonly internalCa: string;
+  readonly internalCert: string;
+  readonly internalKey: string;
   readonly logLevel: string;
 }
 
@@ -43,6 +47,12 @@ export const config: GatewayConfig = {
   cookieSecure: process.env.KUBO_COOKIE_SECURE === 'true',
   refreshCookieDays: num(process.env.KUBO_REFRESH_COOKIE_DAYS, 7),
   logLevel: process.env.LOG_LEVEL ?? 'info',
+  // Malla interna (P-28, ADR-0020): con KUBO_INTERNAL_TLS=true el gateway
+  // presenta su certificado y verifica el de cada servicio.
+  internalTls: process.env.KUBO_INTERNAL_TLS === 'true',
+  internalCa: process.env.KUBO_TLS_CA ?? '',
+  internalCert: process.env.KUBO_TLS_CERT ?? '',
+  internalKey: process.env.KUBO_TLS_KEY ?? '',
   services: {
     iam: process.env.KUBO_IAM_URL ?? 'http://localhost:9081',
     crm: process.env.KUBO_CRM_URL ?? 'http://localhost:9082',

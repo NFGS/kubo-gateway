@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { config } from '../config';
+import { internalFetch } from '../lib/internal-fetch';
 
 interface OverviewCall {
   readonly key: string;
@@ -56,7 +57,7 @@ export class DashboardService {
 
     const settled = await Promise.allSettled(
       calls.map(async (call) => {
-        const response = await fetch(call.url, {
+        const response = await internalFetch(call.url, {
           headers,
           signal: AbortSignal.timeout(5_000),
         });

@@ -1,6 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { createRemoteJWKSet, jwtVerify, type JWTPayload } from 'jose';
+import {
+  createLocalJWKSet,
+  jwtVerify,
+  type JSONWebKeySet,
+  type JWTPayload,
+  type JWTVerifyGetKey,
+} from 'jose';
 import { config } from '../config';
+import { internalFetch } from '../lib/internal-fetch';
 
 /**
  * Verificacion de access tokens contra el JWKS de kubo-iam.
@@ -12,18 +19,42 @@ import { config } from '../config';
 @Injectable()
 export class JwksService {
   private readonly logger = new Logger(JwksService.name);
-  private readonly jwks = createRemoteJWKSet(new URL(config.jwksUri), {
-    // Si llega un `kid` desconocido (rotacion de llave), jose vuelve a pedir el
-    // JWKS. El tiempo de espera entre reintentos existe para que nadie pueda
-    // saturar el endpoint de identidad con tokens de `kid` inventado; 10 s es el
-    // equilibrio: una rotacion se reconoce casi de inmediato sin amplificar trafico.
-    cooldownDuration: 10_000,
-    cacheMaxAge: 600_000,
-    timeoutDuration: 5_000,
-  });
+  private llaves?: JWTVerifyGetKey;
+  private traidasEn = 0;
+
+  // El JWKS se pide con el certificado de la malla (P-28) y se cachea; jose no
+  // permite inyectar un `fetch` propio en su variante remota.
+  private async llavesVigentes(forzar = false): Promise<JWTVerifyGetKey> {
+    const vencidas = Date.now() - this.traidasEn > 600_000;
+
+    if (!this.llaves || vencidas || forzar) {
+      const response = await internalFetch(config.jwksUri, {
+        signal: AbortSignal.timeout(5_000),
+      });
+
+      if (!response.ok) {
+        throw new Error(`El JWKS respondio ${response.status}`);
+      }
+
+      this.llaves = createLocalJWKSet((await response.json()) as JSONWebKeySet);
+      this.traidasEn = Date.now();
+    }
+
+    return this.llaves;
+  }
 
   async verify(token: string): Promise<JWTPayload> {
-    const { payload } = await jwtVerify(token, this.jwks, {
+    try {
+      return await this.verificarCon(await this.llavesVigentes(), token);
+    } catch (error) {
+      // Un `kid` desconocido puede ser una rotacion de llave: se refresca una vez
+      // y, si sigue fallando, el error original es el que importa.
+      return await this.verificarCon(await this.llavesVigentes(true), token);
+    }
+  }
+
+  private async verificarCon(llaves: JWTVerifyGetKey, token: string): Promise<JWTPayload> {
+    const { payload } = await jwtVerify(token, llaves, {
       issuer: config.issuer,
       audience: config.audience,
     });
@@ -40,7 +71,7 @@ export class JwksService {
 
   async isReachable(): Promise<boolean> {
     try {
-      const response = await fetch(config.jwksUri, {
+      const response = await internalFetch(config.jwksUri, {
         signal: AbortSignal.timeout(3_000),
       });
       return response.ok;

@@ -1,5 +1,6 @@
 import express, { type Request, type Response, type Router } from 'express';
 import { config } from '../config';
+import { internalFetch } from '../lib/internal-fetch';
 import { logger } from '../logger';
 
 /**
@@ -84,7 +85,7 @@ function forwardHeaders(request: Request): Record<string, string> {
 }
 
 async function callIam(path: string, request: Request, body: unknown): Promise<globalThis.Response> {
-  return fetch(`${config.services.iam}/api/v1/auth${path}`, {
+  return internalFetch(`${config.services.iam}/api/v1/auth${path}`, {
     method: 'POST',
     headers: forwardHeaders(request),
     body: JSON.stringify(body),
