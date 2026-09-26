@@ -28,6 +28,8 @@ const IDENTITY_HEADERS = [
   'x-tenant-vertical',
   // Nombre del negocio: lo necesita la factura electronica (P-18).
   'x-tenant-name',
+  // Plan comercial (ADR-0021): cada servicio aplica sus cupos con el.
+  'x-tenant-plan',
 ];
 
 /**
@@ -70,6 +72,7 @@ export function createAuthMiddleware(jwks: JwksService) {
       request.headers['x-tenant-timezone'] = String(payload.tenant_timezone ?? '');
       request.headers['x-tenant-vertical'] = String(payload.tenant_vertical ?? '');
       request.headers['x-tenant-name'] = String(payload.tenant ?? '');
+      request.headers['x-tenant-plan'] = String(payload.tenant_plan ?? '');
       next();
     } catch (error) {
       logger.warn(
