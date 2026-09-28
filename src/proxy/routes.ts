@@ -52,10 +52,13 @@ export function findRoute(path: string): ProxyRoute | undefined {
  * - `/api/v1/health`: sonda propia (no depende de los servicios).
  * - `/api/v1/dashboard/overview`: vista compuesta que consulta a varios
  *   servicios en paralelo (patron BFF).
+ * - `/api/v1/platform/usage`: vista compuesta que une los negocios (IAM) con los
+ *   conteos del ERP para el panel de plataforma (ADR-0025).
  */
 export const GATEWAY_OWNED_PATHS: ReadonlySet<string> = new Set([
   '/api/v1/health',
   '/api/v1/dashboard/overview',
+  '/api/v1/platform/usage',
 ]);
 
 export function isGatewayOwned(path: string): boolean {
