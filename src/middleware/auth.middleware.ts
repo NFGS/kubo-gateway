@@ -60,6 +60,14 @@ export function createAuthMiddleware(jwks: JwksService) {
       return;
     }
 
+    // Webhooks de proveedores (F6.6, ADR-0026): publicos por naturaleza, con
+    // firma HMAC verificada en IAM. El camino trae el proveedor en la URL, por
+    // eso la comparacion es por prefijo y no exacta.
+    if (request.path.startsWith('/api/v1/webhooks/')) {
+      next();
+      return;
+    }
+
     const authorization = request.headers.authorization;
     if (!authorization?.startsWith('Bearer ')) {
       response.status(401).json({

@@ -201,6 +201,20 @@ else {
   fail += 1;
 }
 
+const prices = await get('/tenants/me/prices', token);
+if (prices.status === 200) check('/tenants/me/prices cumple el esquema PriceList', 'PriceList', prices.body);
+else {
+  console.log(`  \u001b[31mFALLA\u001b[0m /tenants/me/prices respondio ${prices.status}`);
+  fail += 1;
+}
+
+const payment = await post('/tenants/me/payments', token, { plan: 'pro', cycle_months: 1 });
+if (payment.status === 200) check('la intencion de pago cumple el esquema PaymentItem', 'PaymentItem', payment.body);
+else {
+  console.log(`  \u001b[31mFALLA\u001b[0m /tenants/me/payments respondio ${payment.status}`);
+  fail += 1;
+}
+
 const documents = await get('/documents', token);
 if (documents.status === 200) check('/documents cumple el esquema DocumentList', 'DocumentList', documents.body);
 else {
