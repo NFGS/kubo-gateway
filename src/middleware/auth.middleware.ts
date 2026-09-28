@@ -12,6 +12,9 @@ export const PUBLIC_PATHS: ReadonlySet<string> = new Set([
   '/api/v1/auth/reset-password',
   // Segundo paso del acceso: se llama con el desafio, antes de tener sesion (P-30).
   '/api/v1/auth/totp/verify',
+  // Reino de plataforma (F6.4): su acceso se completa antes de tener sesion.
+  '/api/v1/platform/auth/login',
+  '/api/v1/platform/auth/totp',
   '/api/v1/auth/.well-known/jwks.json',
   '/api/v1/health',
 ]);
@@ -30,6 +33,9 @@ const IDENTITY_HEADERS = [
   'x-tenant-name',
   // Plan comercial (ADR-0021): cada servicio aplica sus cupos con el.
   'x-tenant-plan',
+  // Identidad del operador de plataforma (F6.4, ADR-0025).
+  'x-platform-admin-id',
+  'x-platform-admin-email',
 ];
 
 /**
@@ -65,6 +71,30 @@ export function createAuthMiddleware(jwks: JwksService) {
 
     try {
       const payload = await jwks.verify(authorization.slice('Bearer '.length));
+
+      // Reino de plataforma (F6.4, ADR-0025): un token de negocio no entra a
+      // `/platform/*` y uno de plataforma no lee el API del negocio. La
+      // separacion no depende de la interfaz.
+      const esRutaPlataforma = request.path.startsWith('/api/v1/platform');
+      const esTokenPlataforma = payload.platform === true;
+
+      if (esRutaPlataforma !== esTokenPlataforma) {
+        response.status(403).json({
+          code: 'FORBIDDEN',
+          message: esRutaPlataforma
+            ? 'Se requiere una sesion de plataforma'
+            : 'Un token de plataforma no accede al API del negocio',
+        });
+        return;
+      }
+
+      if (esTokenPlataforma) {
+        request.headers['x-platform-admin-id'] = String(payload.sub ?? '');
+        request.headers['x-platform-admin-email'] = String(payload.email ?? '');
+        next();
+        return;
+      }
+
       request.headers['x-user-id'] = String(payload.sub ?? '');
       request.headers['x-tenant-id'] = String(payload.tenant_id ?? '');
       request.headers['x-user-role'] = String(payload.role ?? '');
