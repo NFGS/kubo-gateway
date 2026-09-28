@@ -194,6 +194,13 @@ else {
   fail += 1;
 }
 
+const usage = await get('/usage', token);
+if (usage.status === 200) check('/usage cumple el esquema UsageItem', 'UsageItem', usage.body);
+else {
+  console.log(`  \u001b[31mFALLA\u001b[0m /usage respondio ${usage.status}`);
+  fail += 1;
+}
+
 const documents = await get('/documents', token);
 if (documents.status === 200) check('/documents cumple el esquema DocumentList', 'DocumentList', documents.body);
 else {
