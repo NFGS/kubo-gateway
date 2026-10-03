@@ -46,10 +46,14 @@ export class JwksService {
   async verify(token: string): Promise<JWTPayload> {
     try {
       return await this.verificarCon(await this.llavesVigentes(), token);
-    } catch (error) {
-      // Un `kid` desconocido puede ser una rotacion de llave: se refresca una vez
-      // y, si sigue fallando, el error original es el que importa.
-      return await this.verificarCon(await this.llavesVigentes(true), token);
+    } catch (original) {
+      // Un `kid` desconocido puede ser una rotacion de llave: se refresca una
+      // vez. Si aun asi falla, el error original es el que importa.
+      try {
+        return await this.verificarCon(await this.llavesVigentes(true), token);
+      } catch {
+        throw original;
+      }
     }
   }
 
@@ -57,6 +61,10 @@ export class JwksService {
     const { payload } = await jwtVerify(token, llaves, {
       issuer: config.issuer,
       audience: config.audience,
+      // Solo RS256: sin fijarlo, la libreria acepta cualquier algoritmo
+      // compatible con la llave (p. ej. HS256 usando la llave publica como
+      // secreto compartido). La identidad se firma con RSA, y nada mas.
+      algorithms: ['RS256'],
     });
 
     // Solo los tokens de acceso abren la API. El desafio del segundo factor

@@ -29,24 +29,32 @@ petición al microservicio correspondiente.
 
 | Prefijo | Servicio |
 | --- | --- |
-| `/api/v1/auth`, `/api/v1/users`, `/api/v1/audit` | kubo-iam |
+| `/api/v1/auth`, `/api/v1/users`, `/api/v1/audit`, `/api/v1/tenants`, `/api/v1/platform`, `/api/v1/webhooks` | kubo-iam |
 | `/api/v1/customers` | kubo-crm |
-| `/api/v1/products`, `/api/v1/sales`, `/api/v1/stock` | kubo-erp |
+| `/api/v1/packs`, `/api/v1/products`, `/api/v1/sales`, `/api/v1/stock`, `/api/v1/suppliers`, `/api/v1/warehouses`, `/api/v1/transfers`, `/api/v1/notifications`, `/api/v1/documents`, `/api/v1/usage`, `/api/v1/purchases`, `/api/v1/cash-sessions`, `/api/v1/reports` | kubo-erp |
 | `/api/v1/dashboard`, `/api/v1/events` | kubo-analytics |
+
+El gateway también atiende por sí mismo las vistas compuestas del BFF
+(`/api/v1/dashboard/overview` y `/api/v1/platform/usage`) y su sonda
+`/api/v1/health`.
 
 ## Rutas públicas
 
 `/api/v1/health`, `/api/v1/auth/login`, `/api/v1/auth/register`,
 `/api/v1/auth/refresh`, `/api/v1/auth/logout`,
-`/api/v1/auth/forgot-password`, `/api/v1/auth/reset-password` y
-`/api/v1/auth/.well-known/jwks.json`. Todo lo demás exige `Bearer <token>`.
+`/api/v1/auth/forgot-password`, `/api/v1/auth/reset-password`,
+`/api/v1/auth/totp/verify` (segundo paso del acceso), `/api/v1/platform/auth/login`
+y `/api/v1/platform/auth/totp` (acceso del operador),
+`/api/v1/auth/.well-known/jwks.json` y los webhooks de pago
+(`/api/v1/webhooks/...`, que se autentican con firma HMAC en IAM). Todo lo demás
+exige `Bearer <token>`.
 
 ## Ejecución local
 
 ```bash
 npm install
 npm run build
-npm test          # pruebas de la tabla de rutas y de las rutas publicas
+npm test          # 12 pruebas: tabla de rutas, rutas publicas, limite de tasa (Redis real) y vista compuesta de plataforma
 npm start
 ```
 
@@ -71,7 +79,10 @@ npm start
   `OTEL_EXPORTER_OTLP_ENDPOINT` está definido; la instrumentación automática
   cubre HTTP, Express y los proxys hacia los microservicios.
 - **Contratos ejecutables**: `scripts/contracts.mjs` valida las respuestas reales
-  contra `kubo-docs/api/openapi.json` con Ajv (`make contracts`). El esquema
-  `LoginResponse` usa `additionalProperties: false`: un `refreshToken` filtrado
-  rompe la validación.
+  contra `kubo-docs/api/openapi.json` con Ajv (`make contracts`, 23 verificaciones).
+  El esquema `LoginResponse` usa `additionalProperties: false`: un `refreshToken`
+  filtrado rompe la validación. En el CI polyrepo el job es manual y necesita el
+  sistema en ejecución (`KUBO_API`); el gate local lo corre `make ci`.
+- **Verificación de firma**: `jwtVerify` fija `algorithms: ['RS256']`; la
+  identidad solo se acepta firmada con RSA.
 - **CI**: `.gitlab-ci.yml` con typecheck, pruebas, SAST, secretos y dependencias.
