@@ -86,3 +86,5 @@ npm start
 - **Verificación de firma**: `jwtVerify` fija `algorithms: ['RS256']`; la
   identidad solo se acepta firmada con RSA.
 - **CI**: `.gitlab-ci.yml` con typecheck, pruebas, SAST, secretos y dependencias.
+- **Cobertura**: `npm test` corre con la cobertura nativa de Node y exige ≥ 80 %
+  en líneas y funciones (hoy 88.7 / 85.2), excluyendo los archivos de prueba.

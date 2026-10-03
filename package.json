@@ -9,7 +9,7 @@
     "start": "node dist/main.js",
     "dev": "tsc -p tsconfig.json --watch",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "npm run build && node --test test/*.test.cjs"
+    "test": "npm run build && node --test --experimental-test-coverage \"--test-coverage-exclude=**/test/**\" --test-coverage-lines=80 --test-coverage-functions=80 test/*.test.cjs"
   },
   "dependencies": {
     "@nestjs/common": "^12.1.0",
