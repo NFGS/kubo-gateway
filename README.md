@@ -54,7 +54,7 @@ exige `Bearer <token>`.
 ```bash
 npm install
 npm run build
-npm test          # 12 pruebas: tabla de rutas, rutas publicas, limite de tasa (Redis real) y vista compuesta de plataforma
+npm test          # 19 pruebas: rutas, middleware de acceso, limite de tasa (Redis real) y vista compuesta de plataforma
 npm start
 ```
 
@@ -87,4 +87,6 @@ npm start
   identidad solo se acepta firmada con RSA.
 - **CI**: `.gitlab-ci.yml` con typecheck, pruebas, SAST, secretos y dependencias.
 - **Cobertura**: `npm test` corre con la cobertura nativa de Node y exige ≥ 80 %
-  en líneas y funciones (hoy 88.7 / 85.2), excluyendo los archivos de prueba.
+  en líneas y funciones (hoy 95.6 / 85.2), excluyendo los archivos de prueba.
+- **Contratos del consumidor (Pact)**: `scripts/pact-verify.mjs` reproduce los
+  contratos de la PWA contra el sistema vivo (estados + token real); `make pact`.
