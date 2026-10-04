@@ -83,11 +83,12 @@ npm start
 - **Contratos ejecutables**: `scripts/contracts.mjs` valida las respuestas reales
   contra `kubo-docs/api/openapi.json` con Ajv (`make contracts`, 23 verificaciones).
   El esquema `LoginResponse` usa `additionalProperties: false`: un `refreshToken`
-  filtrado rompe la validación. En el CI polyrepo el job es manual y necesita el
-  sistema en ejecución (`KUBO_API`); el gate local lo corre `make ci`.
+  filtrado rompe la validación. El job necesita el sistema en ejecución
+  (`KUBO_API`); el gate local lo corre `make ci`.
 - **Verificación de firma**: `jwtVerify` fija `algorithms: ['RS256']`; la
   identidad solo se acepta firmada con RSA.
-- **CI**: `.gitlab-ci.yml` con typecheck, pruebas, SAST, secretos y dependencias.
+- **CI**: gate local `make ci` (typecheck, pruebas, contratos, Pact, humo y E2E);
+  los pipelines de GitLab se retiraron al quedar GitHub como único destino.
 - **Cobertura**: `npm test` corre con la cobertura nativa de Node y exige ≥ 80 %
   en líneas y funciones (hoy 95.6 / 85.2), excluyendo los archivos de prueba.
 - **Contratos del consumidor (Pact)**: `scripts/pact-verify.mjs` reproduce los
