@@ -33,6 +33,13 @@ const IDENTITY_HEADERS = [
   'x-tenant-name',
   // Plan comercial (ADR-0021): cada servicio aplica sus cupos con el.
   'x-tenant-plan',
+  // Datos fiscales del negocio (DIAN): el ERP los necesita para facturar.
+  'x-tenant-tax-id',
+  'x-tenant-tax-id-dv',
+  'x-tenant-fiscal-address',
+  'x-tenant-tax-regime',
+  'x-tenant-invoice-resolution',
+  'x-tenant-invoice-prefix',
   // Identidad del operador de plataforma (F6.4, ADR-0025).
   'x-platform-admin-id',
   'x-platform-admin-email',
@@ -111,6 +118,12 @@ export function createAuthMiddleware(jwks: JwksService) {
       request.headers['x-tenant-vertical'] = String(payload.tenant_vertical ?? '');
       request.headers['x-tenant-name'] = String(payload.tenant ?? '');
       request.headers['x-tenant-plan'] = String(payload.tenant_plan ?? '');
+      request.headers['x-tenant-tax-id'] = String(payload.tenant_tax_id ?? '');
+      request.headers['x-tenant-tax-id-dv'] = String(payload.tenant_tax_id_dv ?? '');
+      request.headers['x-tenant-fiscal-address'] = String(payload.tenant_fiscal_address ?? '');
+      request.headers['x-tenant-tax-regime'] = String(payload.tenant_tax_regime ?? '');
+      request.headers['x-tenant-invoice-resolution'] = String(payload.tenant_invoice_resolution ?? '');
+      request.headers['x-tenant-invoice-prefix'] = String(payload.tenant_invoice_prefix ?? '');
       next();
     } catch (error) {
       logger.warn(

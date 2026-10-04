@@ -15,7 +15,9 @@ petición al microservicio correspondiente.
 1. **Verificación de JWT** (RS256) contra el JWKS de `kubo-iam`. La llave privada
    nunca sale del servicio de identidad.
 2. **Anti-suplantación**: elimina cualquier cabecera `X-User-*` enviada por el
-   cliente antes de inyectar la identidad verificada.
+   cliente antes de inyectar la identidad verificada. También propaga la
+   configuración del negocio que viaja en el token: zona horaria, vertical,
+   plan y datos fiscales (NIT, DV, régimen, resolución y prefijo).
 3. **Límites de tasa** por **usuario**, negocio o IP, con ventana de un minuto y
    umbral más estricto en las rutas de autenticación.
 4. **BFF de autenticación**: intercepta `login`, `refresh` y `logout`, deja el

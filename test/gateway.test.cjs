@@ -44,6 +44,12 @@ test('la identidad verificada viaja como cabeceras, incluida la zona horaria', a
       tenant_vertical: 'restaurantes',
       tenant: 'Tienda La Esquina',
       tenant_plan: 'community',
+      tenant_tax_id: '900123456',
+      tenant_tax_id_dv: '8',
+      tenant_fiscal_address: 'Calle 1 # 2-3',
+      tenant_tax_regime: 'RESPONSABLE_IVA',
+      tenant_invoice_resolution: 'Resolucion 18764',
+      tenant_invoice_prefix: 'FE',
     }),
   };
   const middleware = createAuthMiddleware(jwks);
@@ -55,6 +61,7 @@ test('la identidad verificada viaja como cabeceras, incluida la zona horaria', a
       // El cliente intenta suplantar identidad: debe borrarse y reescribirse.
       'x-user-id': 'intruso',
       'x-tenant-timezone': 'Pacific/Kiritimati',
+      'x-tenant-tax-id': '000000000',
     },
   };
   const response = fakeResponse();
@@ -71,6 +78,13 @@ test('la identidad verificada viaja como cabeceras, incluida la zona horaria', a
   assert.equal(request.headers['x-tenant-vertical'], 'restaurantes');
   assert.equal(request.headers['x-tenant-name'], 'Tienda La Esquina');
   assert.equal(request.headers['x-tenant-plan'], 'community');
+  // Los datos fiscales viajan verificados y pisan lo que mande el cliente.
+  assert.equal(request.headers['x-tenant-tax-id'], '900123456');
+  assert.equal(request.headers['x-tenant-tax-id-dv'], '8');
+  assert.equal(request.headers['x-tenant-fiscal-address'], 'Calle 1 # 2-3');
+  assert.equal(request.headers['x-tenant-tax-regime'], 'RESPONSABLE_IVA');
+  assert.equal(request.headers['x-tenant-invoice-resolution'], 'Resolucion 18764');
+  assert.equal(request.headers['x-tenant-invoice-prefix'], 'FE');
 });
 
 test('sin zona horaria en el token la cabecera no queda con el valor del cliente', async () => {
