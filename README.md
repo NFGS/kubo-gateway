@@ -1,5 +1,7 @@
 # kubo-gateway
 
+> Parte del proyecto **Kubo** — [kubo-workspace](https://github.com/NFGS/kubo-workspace) (ERP + CRM autoalojable para PYMES).
+
 API Gateway de Kubo. Es el único punto de entrada del sistema: valida la
 identidad, aplica límites de tasa, propaga la trazabilidad y enruta cada
 petición al microservicio correspondiente.
