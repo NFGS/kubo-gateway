@@ -1,5 +1,7 @@
 # kubo-gateway
 
+[![CI](https://github.com/NFGS/kubo-gateway/actions/workflows/ci.yml/badge.svg)](https://github.com/NFGS/kubo-gateway/actions/workflows/ci.yml)
+
 > Parte del proyecto **Kubo** — [kubo-workspace](https://github.com/NFGS/kubo-workspace) (ERP + CRM autoalojable para PYMES).
 
 API Gateway de Kubo. Es el único punto de entrada del sistema: valida la
